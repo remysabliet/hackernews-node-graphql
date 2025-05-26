@@ -1,43 +1,65 @@
-import { Link } from '../models/Link.js';
-
 export class LinkService {
-  constructor() {
-    this.links = [
-      new Link('link-0', 'www.howtographql.com', 'Fullstack tutorial for GraphQL')
-    ];
-    this.idCount = this.links.length;
+  constructor(prismaClient) {
+    if (!prismaClient) {
+      throw new Error("PrismaClient is required");
+    }
+    this.prisma = prismaClient;
   }
 
-  getAllLinks() {
-    return this.links.map(link => link.toJSON());
+  async getAllLinks() {
+    return this.prisma.link.findMany({
+      include: {
+        postedBy: true
+      }
+    });
   }
 
-  getLinkById(id) {
-    const link = this.links.find(link => link.id === id);
-    return link ? link.toJSON() : null;
+  async getLinkById(id) {
+    return this.prisma.link.findUnique({
+      where: { id: parseInt(id) },
+      include: {
+        postedBy: true
+      }
+    });
   }
 
-  createLink(url, description) {
-    const link = new Link(`link-${this.idCount++}`, url, description);
-    this.links.push(link);
-    return link.toJSON();
+  async createLink(url, description, userId) {
+    if (!userId) {
+      throw new Error('User ID is required to create a link');
+    }
+
+    return this.prisma.link.create({
+      data: {
+        url,
+        description,
+        postedBy: {
+          connect: {
+            id: parseInt(userId)
+          }
+        }
+      },
+      include: {
+        postedBy: true
+      }
+    });
   }
 
-  updateLink(id, updates) {
-    const link = this.links.find(link => link.id === id);
-    if (!link) return null;
-
-    if (updates.url !== undefined) link.url = updates.url;
-    if (updates.description !== undefined) link.description = updates.description;
-
-    return link.toJSON();
+  async updateLink(id, updates) {
+    return this.prisma.link.update({
+      where: { id: parseInt(id) },
+      data: updates,
+      include: {
+        postedBy: true
+      }
+    });
   }
 
-  deleteLink(id) {
-    const index = this.links.findIndex(link => link.id === id);
-    if (index === -1) return null;
-    
-    const [deleted] = this.links.splice(index, 1);
-    return deleted.toJSON();
+  async deleteLink(id) {
+    return this.prisma.link.delete({
+      where: { id: parseInt(id) },
+      include: {
+        postedBy: true
+      }
+    });
   }
-} 
+}

@@ -1,5 +1,5 @@
 type Query {
   info: String!
-  feed: [Link!]!
-  link(id: ID!): Link
+  feed: [Link!]! @auth
+  link(id: ID!): Link @auth
 }
