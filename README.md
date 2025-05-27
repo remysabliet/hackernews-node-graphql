@@ -1,6 +1,6 @@
 # Hackernews GraphQL API
 
-A GraphQL API built with Node.js, Apollo Server, and Prisma, implementing a Hackernews clone with authentication and real-time updates.
+A GraphQL API built with Node.js, TypeScript, Apollo Server, and Prisma, implementing a Hackernews clone with authentication and real-time updates.
 
 ## Features
 
@@ -10,6 +10,7 @@ A GraphQL API built with Node.js, Apollo Server, and Prisma, implementing a Hack
 - 🔄 Real-time updates
 - 🛡️ Protected routes
 - 📊 Prisma with SQLite database
+- 📘 TypeScript for type safety
 
 ## Prerequisites
 
@@ -35,8 +36,8 @@ pnpm install
 3. Set up environment variables:
 Create a `.env` file in the root directory:
 ```env
+DATABASE_URL=file:./dev.db
 JWT_SECRET=your-super-secret-key-change-this-in-production
-DATABASE_URL="file:./dev.db"
 ```
 
 4. Initialize the database:
@@ -59,8 +60,11 @@ npx prisma migrate reset
 
 6. Start the server:
 ```bash
-npm start
-# or
+# Development mode
+pnpm dev
+
+# Production build
+pnpm build
 pnpm start
 ```
 
@@ -309,23 +313,26 @@ mutation {
 ```
 src/
 ├── config/
-│   └── server.js         # Server configuration
+│   └── server.ts         # Server configuration
 ├── directives/
-│   └── auth.js          # Authentication directive
+│   └── auth.ts          # Authentication directive
 ├── graphql/
 │   ├── mutations/       # GraphQL mutations
 │   ├── queries/         # GraphQL queries
 │   └── types/          # GraphQL types
 ├── middleware/
-│   └── auth.js         # Authentication middleware
+│   └── auth.ts         # Authentication middleware
 ├── resolvers/
-│   ├── index.js        # Resolver combination
-│   ├── linkResolvers.js # Link resolvers
-│   └── userResolvers.js # User resolvers
+│   ├── index.ts        # Resolver combination
+│   ├── linkResolvers.ts # Link resolvers
+│   └── userResolvers.ts # User resolvers
 ├── services/
-│   ├── AuthService.js  # Authentication service
-│   └── LinkService.js  # Link service
-└── index.js            # Application entry point
+│   ├── AuthService.ts  # Authentication service
+│   └── LinkService.ts  # Link service
+├── types/
+│   ├── index.ts        # Type definitions
+│   └── interfaces.ts   # Interface definitions
+└── index.ts            # Application entry point
 ```
 
 ## Authentication Flow
@@ -345,6 +352,14 @@ The API uses consistent error handling:
 - Database errors are properly caught and formatted
 
 ## Development
+
+### TypeScript
+
+The project uses TypeScript for type safety. Key features:
+- Strict type checking
+- Interface-based design
+- Type-safe resolvers
+- Proper type definitions for all services
 
 ### Debugging
 
@@ -370,6 +385,11 @@ The API uses consistent error handling:
    - Run `npx prisma generate` after schema changes
    - Check database connection in .env
    - Verify migrations with `npx prisma migrate status`
+
+3. TypeScript errors:
+   - Run `pnpm tsc --noEmit` to check for type errors
+   - Ensure all imports use `.js` extension (required for ESM)
+   - Check type definitions in `src/types`
 
 ## Contributing
 

@@ -1,7 +1,9 @@
+import { ResolverMap } from "../types/interfaces.js";
+
 import { userResolvers } from "./userResolvers.js";
 import { linkResolvers } from "./linkResolvers.js";
 
-export const resolvers = {
+export const resolvers: ResolverMap = {
   Query: {
     ...(linkResolvers.Query || {}),
   },
@@ -15,6 +17,4 @@ export const resolvers = {
   Link: {
     ...(linkResolvers.Link || {}),
   },
-};
-
-// console.log("Combined resolvers:", resolvers);
+}; 

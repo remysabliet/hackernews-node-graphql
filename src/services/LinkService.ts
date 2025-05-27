@@ -1,12 +1,26 @@
+import { PrismaClient } from "@prisma/client";
+import { Link, User } from "../types/index.js";
+
+interface LinkWithUser extends Link {
+  postedBy: User | null;
+}
+
+interface LinkUpdates {
+  url?: string;
+  description?: string;
+}
+
 export class LinkService {
-  constructor(prismaClient) {
+  private prisma: PrismaClient;
+
+  constructor(prismaClient: PrismaClient) {
     if (!prismaClient) {
       throw new Error("PrismaClient is required");
     }
     this.prisma = prismaClient;
   }
 
-  async getAllLinks() {
+  async getAllLinks(): Promise<LinkWithUser[]> {
     return this.prisma.link.findMany({
       include: {
         postedBy: true
@@ -14,16 +28,16 @@ export class LinkService {
     });
   }
 
-  async getLinkById(id) {
+  async getLinkById(id: string | number): Promise<LinkWithUser | null> {
     return this.prisma.link.findUnique({
-      where: { id: parseInt(id) },
+      where: { id: parseInt(id.toString()) },
       include: {
         postedBy: true
       }
     });
   }
 
-  async createLink(url, description, userId) {
+  async createLink(url: string, description: string, userId: number): Promise<LinkWithUser> {
     if (!userId) {
       throw new Error('User ID is required to create a link');
     }
@@ -34,7 +48,7 @@ export class LinkService {
         description,
         postedBy: {
           connect: {
-            id: parseInt(userId)
+            id: userId
           }
         }
       },
@@ -44,9 +58,9 @@ export class LinkService {
     });
   }
 
-  async updateLink(id, updates) {
+  async updateLink(id: string | number, updates: LinkUpdates): Promise<LinkWithUser> {
     return this.prisma.link.update({
-      where: { id: parseInt(id) },
+      where: { id: parseInt(id.toString()) },
       data: updates,
       include: {
         postedBy: true
@@ -54,12 +68,12 @@ export class LinkService {
     });
   }
 
-  async deleteLink(id) {
+  async deleteLink(id: string | number): Promise<LinkWithUser> {
     return this.prisma.link.delete({
-      where: { id: parseInt(id) },
+      where: { id: parseInt(id.toString()) },
       include: {
         postedBy: true
       }
     });
   }
-}
+} 

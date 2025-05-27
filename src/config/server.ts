@@ -31,12 +31,18 @@ if (!process.env.JWT_SECRET) {
 
 const authService = new AuthService(prisma, process.env.JWT_SECRET);
 
-export const createServer = (resolvers) => {
-  // Load all .graphql files from the graphql directory and its subdirectories
-  const typesArray = loadFilesSync(path.join(__dirname, "../graphql"), {
+export const createServer = (resolvers: any): ApolloServer => {
+  // Load all GraphQL files
+  const graphqlPath = path.join(__dirname, "../../src/graphql");
+  console.log("Loading GraphQL files from:", graphqlPath);
+  
+  const typesArray = loadFilesSync(graphqlPath, {
     extensions: ["graphql"],
     recursive: true,
+    ignoreIndex: true,
   });
+
+  // console.log("Loaded GraphQL files:", typesArray.map(t => t.kind));
 
   // Add directive type definitions
   const directiveTypeDefs = authDirective.auth.typeDefs;
@@ -59,7 +65,7 @@ export const createServer = (resolvers) => {
   return server;
 };
 
-export const startServer = async (server) => {
+export const startServer = async (server: ApolloServer): Promise<string> => {
   const { url } = await startStandaloneServer(server, {
     listen: { port: 4000 },
     context: async ({ req }) => {
@@ -80,4 +86,4 @@ export const startServer = async (server) => {
   });
   console.log(`🚀 Server ready at ${url}`);
   return url;
-};
+}; 

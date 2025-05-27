@@ -1,12 +1,14 @@
 import { mapSchema, getDirective, MapperKind } from "@graphql-tools/utils";
-import { defaultFieldResolver } from "graphql";
+import { defaultFieldResolver, GraphQLSchema } from "graphql";
+import { AuthService } from "../services/AuthService.js";
+import { ResolverContext } from "../types/index.js";
 
 export const authDirective = {
   auth: {
     typeDefs: `
       directive @auth on FIELD_DEFINITION
     `,
-    transformer: (schema) =>
+    transformer: (schema: GraphQLSchema) =>
       mapSchema(schema, {
         [MapperKind.OBJECT_FIELD]: (fieldConfig) => {
           const authDirective = getDirective(schema, fieldConfig, "auth")?.[0];
@@ -14,7 +16,7 @@ export const authDirective = {
           if (authDirective) {
             const { resolve = defaultFieldResolver } = fieldConfig;
 
-            fieldConfig.resolve = async (source, args, context, info) => {
+            fieldConfig.resolve = async (source: any, args: any, context: any, info: any) => {
               if (!context.user) {
                 throw new Error("Not authenticated");
               }
@@ -27,8 +29,8 @@ export const authDirective = {
   },
 };
 
-export const getAuthContext = (authService) => {
-  return async ({ req }) => {
+export const getAuthContext = (authService: AuthService) => {
+  return async ({ req }: ResolverContext) => {
     try {
       // Get the token from the Authorization header
       const authHeader = req.headers.authorization || "";
@@ -46,4 +48,4 @@ export const getAuthContext = (authService) => {
       return { user: null };
     }
   };
-};
+}; 
