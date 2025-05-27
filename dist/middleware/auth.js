@@ -1,44 +1,34 @@
-import { mapSchema, getDirective, MapperKind } from "@graphql-tools/utils";
-import { defaultFieldResolver } from "graphql";
-export const authDirective = {
-    auth: {
-        typeDefs: `
-      directive @auth on FIELD_DEFINITION
-    `,
-        transformer: (schema) => mapSchema(schema, {
-            [MapperKind.OBJECT_FIELD]: (fieldConfig) => {
-                const authDirective = getDirective(schema, fieldConfig, "auth")?.[0];
-                if (authDirective) {
-                    const { resolve = defaultFieldResolver } = fieldConfig;
-                    fieldConfig.resolve = async (source, args, context, info) => {
-                        if (!context.user) {
-                            throw new Error("Not authenticated");
-                        }
-                        return resolve(source, args, context, info);
-                    };
-                }
-                return fieldConfig;
-            },
-        }),
-    },
+import jwt from "jsonwebtoken";
+// Configuration
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+/**
+ * Authentication middleware for GraphQL resolvers
+ * Ensures that the user is authenticated before proceeding with the resolver
+ * @throws {Error} If user is not authenticated
+ */
+export const auth = async ({ context }, next) => {
+    if (!context.user) {
+        throw new Error("Authentication required");
+    }
+    return next();
 };
-export const getAuthContext = (authService) => {
-    return async ({ req }) => {
-        try {
-            // Get the token from the Authorization header
-            const authHeader = req.headers.authorization || "";
-            const token = authHeader.replace("Bearer ", "");
-            if (!token) {
-                return { user: null };
-            }
-            // Verify token and get user
-            const user = await authService.getUserFromToken(token);
-            return { user };
+/**
+ * Verifies and decodes a JWT token
+ * @param {string} token - JWT token to verify
+ * @returns {User} Decoded user information
+ * @throws {Error} If token is invalid or expired
+ */
+export const getTokenPayload = (token) => {
+    try {
+        return jwt.verify(token, JWT_SECRET);
+    }
+    catch (error) {
+        if (error instanceof jwt.TokenExpiredError) {
+            throw new Error("Token expired");
         }
-        catch (error) {
-            console.error("Auth context error:", error);
-            return { user: null };
+        if (error instanceof jwt.JsonWebTokenError) {
+            throw new Error("Invalid token");
         }
-    };
+        throw new Error("Token verification failed");
+    }
 };
-//# sourceMappingURL=auth.js.map

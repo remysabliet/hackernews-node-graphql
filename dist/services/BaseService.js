@@ -30,4 +30,3 @@ export class BaseService {
         });
     }
 }
-//# sourceMappingURL=BaseService.js.map

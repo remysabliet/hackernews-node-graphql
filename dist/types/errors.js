@@ -22,4 +22,3 @@ export class DatabaseError extends Error {
         this.name = "DatabaseError";
     }
 }
-//# sourceMappingURL=errors.js.map

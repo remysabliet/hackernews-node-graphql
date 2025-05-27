@@ -1,4 +1,7 @@
-import { User } from "./index.js";
+import { PrismaClient } from "@prisma/client";
+import { AuthService } from "../services/AuthService.js";
+import { LinkService } from "../services/LinkService.js";
+import { User } from "../graphql/types/User.js";
 
 // Auth related interfaces
 export interface SignupArgs {
@@ -39,15 +42,10 @@ export interface ResolverInfo {
 }
 
 export interface ResolverContext {
-  req: {
-    headers: {
-      authorization?: string;
-    };
-  };
-  user?: User | null;
-  prisma: any;
-  linkService: any;
-  authService: any;
+  prisma: PrismaClient;
+  authService: AuthService;
+  linkService: LinkService;
+  user: User | null;
 }
 
 export type ResolverFn = (
@@ -61,4 +59,15 @@ export interface ResolverMap {
   [key: string]: {
     [key: string]: ResolverFn;
   };
+}
+
+export interface LinkUpdates {
+  url?: string;
+  description?: string;
+}
+
+export interface CreateLinkInput {
+  url: string;
+  description: string;
+  userId: number;
 } 

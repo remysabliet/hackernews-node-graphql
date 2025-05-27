@@ -1,5 +1,0 @@
-type Query {
-  info: String!
-  feed: [Link!]! @auth
-  link(id: ID!): Link @auth
-}

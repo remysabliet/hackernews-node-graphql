@@ -1,23 +1,22 @@
 import { ApolloServer } from "@apollo/server";
 import { startStandaloneServer } from "@apollo/server/standalone";
-import { loadFilesSync } from "@graphql-tools/load-files";
-import { mergeTypeDefs } from "@graphql-tools/merge";
-import { makeExecutableSchema } from "@graphql-tools/schema";
 import { PrismaClient } from "@prisma/client";
-import path from "path";
-import { fileURLToPath } from "url";
 import dotenv from "dotenv";
+import { buildSchema } from "type-graphql";
+import "reflect-metadata";
 
 import { AuthService } from "../services/AuthService.js";
 import { LinkService } from "../services/LinkService.js";
-import { getAuthContext } from "../middleware/auth.js";
-import { authDirective } from "../directives/auth.js";
+import { UserResolver } from "../graphql/resolvers/UserResolver.js";
+import { LinkResolver } from "../graphql/resolvers/LinkResolver.js";
+import { ResolverContext } from "../types/interfaces.js";
 
 // Load environment variables
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Configuration constants
+const PORT = process.env.PORT || 4000;
+const DEFAULT_JWT_SECRET = "development-secret-key";
 
 // Initialize services
 const prisma = new PrismaClient();
@@ -26,64 +25,58 @@ const linkService = new LinkService(prisma);
 // Ensure JWT_SECRET is available
 if (!process.env.JWT_SECRET) {
   console.warn("Warning: JWT_SECRET is not set. Using a default secret for development.");
-  process.env.JWT_SECRET = "development-secret-key";
+  process.env.JWT_SECRET = DEFAULT_JWT_SECRET;
 }
 
 const authService = new AuthService(prisma, process.env.JWT_SECRET);
 
-export const createServer = (resolvers: any): ApolloServer => {
-  // Load all GraphQL files
-  const graphqlPath = path.join(__dirname, "../../src/graphql");
-  console.log("Loading GraphQL files from:", graphqlPath);
-  
-  const typesArray = loadFilesSync(graphqlPath, {
-    extensions: ["graphql"],
-    recursive: true,
-    ignoreIndex: true,
-  });
+/**
+ * Creates and configures the Apollo Server instance
+ * @returns {Promise<ApolloServer<ResolverContext>>} Configured Apollo Server
+ */
+export async function createServer(): Promise<ApolloServer<ResolverContext>> {
+  try {
+    const schema = await buildSchema({
+      resolvers: [UserResolver, LinkResolver],
+      emitSchemaFile: true,
+      validate: false,
+    });
 
-  // console.log("Loaded GraphQL files:", typesArray.map(t => t.kind));
+    return new ApolloServer<ResolverContext>({
+      schema,
+    });
+  } catch (error) {
+    console.error("Failed to create server:", error);
+    throw new Error("Server initialization failed");
+  }
+}
 
-  // Add directive type definitions
-  const directiveTypeDefs = authDirective.auth.typeDefs;
-  const typeDefs = mergeTypeDefs([...typesArray, directiveTypeDefs]);
+/**
+ * Starts the Apollo Server and returns the server URL
+ * @param {ApolloServer<ResolverContext>} server - Apollo Server instance
+ * @returns {Promise<string>} Server URL
+ */
+export const startServer = async (server: ApolloServer<ResolverContext>): Promise<string> => {
+  try {
+    const { url } = await startStandaloneServer(server, {
+      listen: { port: Number(PORT) },
+      context: async ({ req }) => {
+        const token = req.headers.authorization?.replace("Bearer ", "");
+        const user = token ? await authService.getUserFromToken(token) : null;
 
-  // Create base schema
-  const schema = makeExecutableSchema({
-    typeDefs,
-    resolvers,
-  });
+        return {
+          prisma,
+          authService,
+          linkService,
+          user,
+        };
+      },
+    });
 
-  // Apply auth directive
-  const schemaWithAuth = authDirective.auth.transformer(schema);
-
-  // Create Apollo Server with the transformed schema
-  const server = new ApolloServer({
-    schema: schemaWithAuth,
-  });
-
-  return server;
-};
-
-export const startServer = async (server: ApolloServer): Promise<string> => {
-  const { url } = await startStandaloneServer(server, {
-    listen: { port: 4000 },
-    context: async ({ req }) => {
-      console.log("Creating context...");
-      // Get auth context
-      const { user } = await getAuthContext(authService)({ req });
-
-      // Create context object
-      const context = {
-        user,
-        prisma,
-        linkService,
-        authService,
-      };
-
-      return context;
-    },
-  });
-  console.log(`🚀 Server ready at ${url}`);
-  return url;
+    console.log(`🚀 Server ready at ${url}`);
+    return url;
+  } catch (error) {
+    console.error("Failed to start server:", error);
+    throw new Error("Server startup failed");
+  }
 }; 

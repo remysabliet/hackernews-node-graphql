@@ -28,9 +28,9 @@ export class LinkService {
     });
   }
 
-  async getLinkById(id: string | number): Promise<LinkWithUser | null> {
+  async getLinkById(id: string): Promise<LinkWithUser | null> {
     return this.prisma.link.findUnique({
-      where: { id: parseInt(id.toString()) },
+      where: { id: parseInt(id) },
       include: {
         postedBy: true
       }
@@ -58,9 +58,9 @@ export class LinkService {
     });
   }
 
-  async updateLink(id: string | number, updates: LinkUpdates): Promise<LinkWithUser> {
+  async updateLink(id: string, updates: LinkUpdates): Promise<LinkWithUser> {
     return this.prisma.link.update({
-      where: { id: parseInt(id.toString()) },
+      where: { id: parseInt(id) },
       data: updates,
       include: {
         postedBy: true
@@ -68,9 +68,9 @@ export class LinkService {
     });
   }
 
-  async deleteLink(id: string | number): Promise<LinkWithUser> {
+  async deleteLink(id: string): Promise<LinkWithUser> {
     return this.prisma.link.delete({
-      where: { id: parseInt(id.toString()) },
+      where: { id: parseInt(id) },
       include: {
         postedBy: true
       }

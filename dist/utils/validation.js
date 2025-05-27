@@ -23,4 +23,3 @@ export const validateUrl = (url) => {
         throw new ValidationError("Invalid URL format");
     }
 };
-//# sourceMappingURL=validation.js.map

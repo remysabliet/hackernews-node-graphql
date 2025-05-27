@@ -1,5 +1,0 @@
-type Mutation {
-  post(url: String!, description: String!): Link! @auth
-  updateLink(id: ID!, url: String, description: String): Link @auth
-  deleteLink(id: ID!): Link @auth
-}

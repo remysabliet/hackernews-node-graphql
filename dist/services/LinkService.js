@@ -14,7 +14,7 @@ export class LinkService {
     }
     async getLinkById(id) {
         return this.prisma.link.findUnique({
-            where: { id: parseInt(id.toString()) },
+            where: { id: parseInt(id) },
             include: {
                 postedBy: true
             }
@@ -41,7 +41,7 @@ export class LinkService {
     }
     async updateLink(id, updates) {
         return this.prisma.link.update({
-            where: { id: parseInt(id.toString()) },
+            where: { id: parseInt(id) },
             data: updates,
             include: {
                 postedBy: true
@@ -50,11 +50,10 @@ export class LinkService {
     }
     async deleteLink(id) {
         return this.prisma.link.delete({
-            where: { id: parseInt(id.toString()) },
+            where: { id: parseInt(id) },
             include: {
                 postedBy: true
             }
         });
     }
 }
-//# sourceMappingURL=LinkService.js.map

@@ -1,6 +1,9 @@
-import { resolvers } from "./resolvers/index.js";
 import { createServer, startServer } from "./config/server.js";
-// Create and start server
-const server = createServer(resolvers);
-startServer(server);
-//# sourceMappingURL=index.js.map
+async function main() {
+    const server = await createServer();
+    await startServer(server);
+}
+main().catch((error) => {
+    console.error("Error starting server:", error);
+    process.exit(1);
+});
