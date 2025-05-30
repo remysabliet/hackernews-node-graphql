@@ -12,65 +12,85 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 };
 import { Resolver, Query, Mutation, Arg, Ctx, UseMiddleware, ID } from "type-graphql";
 import { Link } from "../types/Link.js";
+import { Vote } from "../types/Vote.js";
 import { LinkService } from "../../services/LinkService.js";
 import { auth } from "../../middleware/auth.js";
 let LinkResolver = class LinkResolver {
-    async links({ prisma }) {
-        const linkService = new LinkService(prisma);
-        const links = await linkService.getAllLinks();
-        return links.map(link => ({
-            ...link,
-            postedBy: link.postedBy || undefined
-        }));
+    constructor(linkService) {
+        this.linkService = linkService;
     }
-    async link(id, { prisma }) {
-        const linkService = new LinkService(prisma);
-        const link = await linkService.getLinkById(id);
-        if (!link)
-            return null;
-        return {
-            ...link,
-            postedBy: link.postedBy || undefined
-        };
+    async links() {
+        return await this.linkService.getAllLinks();
     }
-    async createLink(url, description, { user, prisma }) {
-        const linkService = new LinkService(prisma);
-        const link = await linkService.createLink(url, description, user.id);
-        return {
-            ...link,
-            postedBy: link.postedBy || undefined
-        };
+    async link(id) {
+        return await this.linkService.getLinkById(id);
     }
-    async updateLink(id, { prisma }, url, description) {
-        const linkService = new LinkService(prisma);
-        const link = await linkService.updateLink(id, { url, description });
-        return {
-            ...link,
-            postedBy: link.postedBy || undefined
-        };
+    /**
+   * Creates a new link posted by the authenticated user.
+   *
+   * This mutation requires authentication - only logged-in users can create links.
+   * The link will be automatically associated with the user who created it.
+   *
+   * @param url - The URL of the link to be shared
+   * @param description - A description or title for the link
+   * @param context - GraphQL resolver context containing authenticated user and Prisma client
+   *
+   * @returns Promise<Link> - The newly created link with associated user information
+   *
+   * @throws {AuthenticationError} - When user is not authenticated (handled by @UseMiddleware(auth))
+   * @throws {ValidationError} - When URL or description is invalid (handled by LinkService)
+   *
+   * @example
+   * ```graphql
+   * mutation {
+   *   createLink(
+   *     url: "https://example.com"
+   *     description: "An interesting article"
+   *   ) {
+   *     id
+   *     url
+   *     description
+   *     postedBy {
+   *       id
+   *       name
+   *     }
+   *     createdAt
+   *   }
+   * }
+   * ```
+   */
+    async createLink(url, description, { user }) {
+        return await this.linkService.createLink(url, description, user.id);
     }
-    async deleteLink(id, { prisma }) {
-        const linkService = new LinkService(prisma);
-        const link = await linkService.deleteLink(id);
+    async updateLink(id, url, description) {
+        return await this.linkService.updateLink(id, { url, description });
+    }
+    async deleteLink(id) {
+        return await this.linkService.deleteLink(id);
+    }
+    async vote(linkId, { user }) {
+        if (!user) {
+            throw new Error("Cannot vote without logging in.");
+        }
+        const link = await this.linkService.vote(linkId, user.id);
         return {
-            ...link,
-            postedBy: link.postedBy || undefined
+            id: Date.now(), // Temporary ID since we don't store votes separately
+            link,
+            user
         };
     }
 };
 __decorate([
     Query(() => [Link]),
-    __param(0, Ctx()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], LinkResolver.prototype, "links", null);
 __decorate([
     Query(() => Link, { nullable: true }),
     __param(0, Arg("id", () => ID)),
-    __param(1, Ctx()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], LinkResolver.prototype, "link", null);
 __decorate([
@@ -87,23 +107,31 @@ __decorate([
     Mutation(() => Link),
     UseMiddleware(auth),
     __param(0, Arg("id", () => ID)),
-    __param(1, Ctx()),
-    __param(2, Arg("url", { nullable: true })),
-    __param(3, Arg("description", { nullable: true })),
+    __param(1, Arg("url", { nullable: true })),
+    __param(2, Arg("description", { nullable: true })),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object, String, String]),
+    __metadata("design:paramtypes", [String, String, String]),
     __metadata("design:returntype", Promise)
 ], LinkResolver.prototype, "updateLink", null);
 __decorate([
     Mutation(() => Link),
     UseMiddleware(auth),
     __param(0, Arg("id", () => ID)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], LinkResolver.prototype, "deleteLink", null);
+__decorate([
+    Mutation(() => Vote),
+    UseMiddleware(auth),
+    __param(0, Arg("linkId", () => ID)),
     __param(1, Ctx()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
-], LinkResolver.prototype, "deleteLink", null);
+], LinkResolver.prototype, "vote", null);
 LinkResolver = __decorate([
-    Resolver(Link)
+    Resolver(Link),
+    __metadata("design:paramtypes", [LinkService])
 ], LinkResolver);
 export { LinkResolver };

@@ -1,59 +1,41 @@
-export class LinkService {
-    constructor(prismaClient) {
-        if (!prismaClient) {
-            throw new Error("PrismaClient is required");
-        }
-        this.prisma = prismaClient;
+import { BaseService } from "./BaseService.js";
+export class LinkService extends BaseService {
+    constructor(linkRepository) {
+        super(linkRepository);
+        this.linkRepository = linkRepository;
     }
     async getAllLinks() {
-        return this.prisma.link.findMany({
-            include: {
-                postedBy: true
-            }
-        });
+        return this.getAll();
     }
     async getLinkById(id) {
-        return this.prisma.link.findUnique({
-            where: { id: parseInt(id) },
-            include: {
-                postedBy: true
-            }
-        });
+        return this.getById(id);
     }
     async createLink(url, description, userId) {
         if (!userId) {
             throw new Error('User ID is required to create a link');
         }
-        return this.prisma.link.create({
-            data: {
-                url,
-                description,
-                postedBy: {
-                    connect: {
-                        id: userId
-                    }
-                }
-            },
-            include: {
-                postedBy: true
-            }
-        });
+        return this.linkRepository.create({ url, description, userId });
     }
     async updateLink(id, updates) {
-        return this.prisma.link.update({
-            where: { id: parseInt(id) },
-            data: updates,
-            include: {
-                postedBy: true
-            }
-        });
+        // Here you could add business logic like:
+        // - Authorization checks
+        // - Update validation
+        // - etc.
+        return this.linkRepository.update(id, updates);
     }
     async deleteLink(id) {
-        return this.prisma.link.delete({
-            where: { id: parseInt(id) },
-            include: {
-                postedBy: true
-            }
-        });
+        // Here you could add business logic like:
+        // - Authorization checks
+        // - Soft delete logic
+        // - etc.
+        return this.linkRepository.delete(id);
+    }
+    async vote(linkId, userId) {
+        // Here you could add business logic like:
+        // - Authorization checks
+        // - Soft delete logic
+        // - etc.
+        console.log("passage", this.linkRepository);
+        return this.linkRepository.vote(linkId, userId);
     }
 }

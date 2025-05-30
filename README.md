@@ -119,4 +119,24 @@ Authorization: Bearer <your-token>
 
 ## License
 
-This project is licensed under the ISC License. 
+This project is licensed under the ISC License.
+
+## Database Setup
+
+### Initial Setup
+```bash
+# Create and apply migrations
+pnpm prisma:migrate
+
+# Seed the database with sample data
+pnpm prisma db seed
+```
+
+The seed data includes:
+- Two users (Alice and Bob)
+- Two links (Prisma and GraphQL documentation)
+- Some initial votes
+
+### Sample User Credentials
+- Alice: alice@example.com / password123
+- Bob: bob@example.com / password123 

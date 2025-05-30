@@ -8,11 +8,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 import { ObjectType, Field, ID } from "type-graphql";
-import { Link } from "./Link.js";
-/**
- * User entity representing a registered user in the system
- * @class User
- */
 let User = class User {
 };
 __decorate([
@@ -20,21 +15,13 @@ __decorate([
     __metadata("design:type", Number)
 ], User.prototype, "id", void 0);
 __decorate([
-    Field({ nullable: true }),
+    Field(),
     __metadata("design:type", String)
 ], User.prototype, "name", void 0);
 __decorate([
-    Field({ nullable: true }),
+    Field(),
     __metadata("design:type", String)
 ], User.prototype, "email", void 0);
-__decorate([
-    Field(() => [Link], { nullable: true }),
-    __metadata("design:type", Array)
-], User.prototype, "links", void 0);
-__decorate([
-    Field(() => [Link], { nullable: true }),
-    __metadata("design:type", Array)
-], User.prototype, "votes", void 0);
 User = __decorate([
     ObjectType()
 ], User);

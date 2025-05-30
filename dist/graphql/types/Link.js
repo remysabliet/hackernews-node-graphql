@@ -35,6 +35,14 @@ __decorate([
     Field(() => User, { nullable: true }),
     __metadata("design:type", User)
 ], Link.prototype, "postedBy", void 0);
+__decorate([
+    Field(() => ID, { nullable: true }),
+    __metadata("design:type", Number)
+], Link.prototype, "postedById", void 0);
+__decorate([
+    Field(() => [User], { nullable: true }),
+    __metadata("design:type", Array)
+], Link.prototype, "voters", void 0);
 Link = __decorate([
     ObjectType()
 ], Link);

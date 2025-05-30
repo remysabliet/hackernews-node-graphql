@@ -1,32 +1,20 @@
 export class BaseService {
-    constructor(prismaClient) {
-        this.prisma = prismaClient;
+    constructor(repository) {
+        this.repository = repository;
     }
-    async findById(model, id) {
-        const modelClient = this.prisma[model.toLowerCase()];
-        return modelClient.findUnique({
-            where: { id: typeof id === 'string' ? parseInt(id) : id }
-        });
+    async getAll() {
+        return this.repository.findAll();
     }
-    async findAll(model) {
-        const modelClient = this.prisma[model.toLowerCase()];
-        return modelClient.findMany();
+    async getById(id) {
+        return this.repository.findById(id);
     }
-    async create(model, data) {
-        const modelClient = this.prisma[model.toLowerCase()];
-        return modelClient.create({ data });
+    async create(data) {
+        return this.repository.create(data);
     }
-    async update(model, id, data) {
-        const modelClient = this.prisma[model.toLowerCase()];
-        return modelClient.update({
-            where: { id: typeof id === 'string' ? parseInt(id) : id },
-            data
-        });
+    async update(id, data) {
+        return this.repository.update(id, data);
     }
-    async delete(model, id) {
-        const modelClient = this.prisma[model.toLowerCase()];
-        return modelClient.delete({
-            where: { id: typeof id === 'string' ? parseInt(id) : id }
-        });
+    async delete(id) {
+        return this.repository.delete(id);
     }
 }

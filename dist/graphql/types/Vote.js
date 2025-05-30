@@ -8,34 +8,23 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 import { ObjectType, Field, ID } from "type-graphql";
+import { User } from "./User.js";
 import { Link } from "./Link.js";
-/**
- * User entity representing a registered user in the system
- * @class User
- */
-let User = class User {
+let Vote = class Vote {
 };
 __decorate([
     Field(() => ID),
     __metadata("design:type", Number)
-], User.prototype, "id", void 0);
+], Vote.prototype, "id", void 0);
 __decorate([
-    Field({ nullable: true }),
-    __metadata("design:type", String)
-], User.prototype, "name", void 0);
+    Field(() => Link),
+    __metadata("design:type", Link)
+], Vote.prototype, "link", void 0);
 __decorate([
-    Field({ nullable: true }),
-    __metadata("design:type", String)
-], User.prototype, "email", void 0);
-__decorate([
-    Field(() => [Link], { nullable: true }),
-    __metadata("design:type", Array)
-], User.prototype, "links", void 0);
-__decorate([
-    Field(() => [Link], { nullable: true }),
-    __metadata("design:type", Array)
-], User.prototype, "votes", void 0);
-User = __decorate([
+    Field(() => User),
+    __metadata("design:type", User)
+], Vote.prototype, "user", void 0);
+Vote = __decorate([
     ObjectType()
-], User);
-export { User };
+], Vote);
+export { Vote };

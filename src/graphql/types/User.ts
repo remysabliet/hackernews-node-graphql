@@ -1,4 +1,5 @@
 import { ObjectType, Field, ID } from "type-graphql";
+import { Link } from "./Link.js";
 
 /**
  * User entity representing a registered user in the system
@@ -17,17 +18,27 @@ export class User {
    * User's display name
    * @type {string}
    */
-  @Field()
-  name: string;
+  @Field({ nullable: true })
+  name?: string;
 
   /**
    * User's email address (unique)
    * @type {string}
    */
-  @Field()
-  email: string;
-}
+  @Field({ nullable: true })
+  email?: string;
 
-function LinkType() {
-  return require("./Link.js").Link;
-} 
+  /**
+   * 
+   * @type {string[]}
+   */
+  @Field(() => [Link], { nullable: true })
+  links?: Link[];
+
+  /**
+ * 
+ * @type {string[]}
+ */
+  @Field(() => [Link], { nullable: true })
+  votes?: Link[];
+}

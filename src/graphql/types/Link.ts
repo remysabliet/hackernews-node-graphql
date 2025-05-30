@@ -41,4 +41,18 @@ export class Link {
    */
   @Field(() => User, { nullable: true })
   postedBy?: User;
+
+  /**
+   * User who posted the link
+   * @type {number}
+   */
+  @Field(() => ID, { nullable: true })
+  postedById?: number;
+
+  /**
+   * Users who voted for the link
+   * @type {[User]}
+   */
+  @Field(() => [User], { nullable: true })
+  voters?: User[];
 } 

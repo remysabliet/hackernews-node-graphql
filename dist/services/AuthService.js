@@ -1,52 +1,32 @@
-import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 export class AuthService {
-    constructor(prisma, jwtSecret) {
+    constructor(prisma, jwtSecret, userService) {
         this.prisma = prisma;
         this.jwtSecret = jwtSecret;
+        this.userService = userService;
     }
-    async signup({ name, email, password }) {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const user = await this.prisma.user.create({
-            data: {
-                name,
-                email,
-                password: hashedPassword,
-            },
-            include: {
-                links: true
-            }
-        });
+    async signup(data) {
+        const user = await this.userService.createUser(data);
         const token = this.generateToken(user);
-        return { token, user: this.mapToGraphQLUser(user) };
+        return { token, user };
     }
-    async login({ email, password }) {
-        const user = await this.prisma.user.findUnique({
-            where: { email },
-            include: {
-                links: true
-            }
-        });
+    async login(data) {
+        const user = await this.userService.findByEmail(data.email);
         if (!user) {
             throw new Error("No user found with this email");
         }
-        const valid = await bcrypt.compare(password, user.password);
+        const valid = await this.userService.validatePassword(user, data.password);
         if (!valid) {
             throw new Error("Invalid password");
         }
         const token = this.generateToken(user);
-        return { token, user: this.mapToGraphQLUser(user) };
+        return { token, user };
     }
     async getUserFromToken(token) {
         try {
             const decoded = jwt.verify(token, this.jwtSecret);
-            const user = await this.prisma.user.findUnique({
-                where: { id: decoded.userId },
-                include: {
-                    links: true
-                }
-            });
-            return user ? this.mapToGraphQLUser(user) : null;
+            const user = await this.userService.getById(decoded.userId);
+            return user;
         }
         catch {
             return null;
@@ -54,12 +34,5 @@ export class AuthService {
     }
     generateToken(user) {
         return jwt.sign({ userId: user.id }, this.jwtSecret);
-    }
-    mapToGraphQLUser(user) {
-        return {
-            id: user.id,
-            name: user.name,
-            email: user.email
-        };
     }
 }

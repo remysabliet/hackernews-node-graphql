@@ -18,7 +18,9 @@ type Link {
   description: String!
   id: ID!
   postedBy: User
+  postedById: ID
   url: String!
+  voters: [User!]
 }
 
 input LoginInput {
@@ -32,6 +34,7 @@ type Mutation {
   login(input: LoginInput!): AuthPayload!
   signup(input: SignupInput!): AuthPayload!
   updateLink(description: String, id: ID!, url: String): Link!
+  vote(linkId: ID!): Vote!
 }
 
 type Query {
@@ -47,7 +50,15 @@ input SignupInput {
 }
 
 type User {
-  email: String!
+  email: String
   id: ID!
-  name: String!
+  links: [Link!]
+  name: String
+  votes: [Link!]
+}
+
+type Vote {
+  id: ID!
+  link: Link!
+  user: User!
 }

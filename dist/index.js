@@ -1,9 +1,12 @@
-import { createServer, startServer } from "./config/server.js";
+import { startServer } from "./config/server.js";
 async function main() {
-    const server = await createServer();
-    await startServer(server);
+    try {
+        const { url } = await startServer();
+        console.log(`Server is running at ${url}`);
+    }
+    catch (error) {
+        console.error("Failed to start server:", error);
+        process.exit(1);
+    }
 }
-main().catch((error) => {
-    console.error("Error starting server:", error);
-    process.exit(1);
-});
+main();

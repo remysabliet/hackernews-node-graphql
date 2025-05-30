@@ -1,43 +1,33 @@
-import { PrismaClient, Prisma } from "@prisma/client";
+import { IBaseRepository } from "../repositories/BaseRepository.js";
 
-type ModelName = Prisma.ModelName;
+export interface IBaseService<T> {
+  getAll(): Promise<T[]>;
+  getById(id: string | number): Promise<T | null>;
+  create(data: Partial<T>): Promise<T>;
+  update(id: string | number, data: Partial<T>): Promise<T>;
+  delete(id: string | number): Promise<T>;
+}
 
-export class BaseService {
-  protected prisma: PrismaClient;
+export abstract class BaseService<T> implements IBaseService<T> {
+  constructor(protected repository: IBaseRepository<T>) {}
 
-  constructor(prismaClient: PrismaClient) {
-    this.prisma = prismaClient;
+  async getAll(): Promise<T[]> {
+    return this.repository.findAll();
   }
 
-  protected async findById<T>(model: ModelName, id: number | string): Promise<T | null> {
-    const modelClient = this.prisma[model.toLowerCase() as keyof PrismaClient] as any;
-    return modelClient.findUnique({
-      where: { id: typeof id === 'string' ? parseInt(id) : id }
-    }) as Promise<T | null>;
+  async getById(id: string | number): Promise<T | null> {
+    return this.repository.findById(id);
   }
 
-  protected async findAll<T>(model: ModelName): Promise<T[]> {
-    const modelClient = this.prisma[model.toLowerCase() as keyof PrismaClient] as any;
-    return modelClient.findMany() as Promise<T[]>;
+  async create(data: Partial<T>): Promise<T> {
+    return this.repository.create(data);
   }
 
-  protected async create<T>(model: ModelName, data: any): Promise<T> {
-    const modelClient = this.prisma[model.toLowerCase() as keyof PrismaClient] as any;
-    return modelClient.create({ data }) as Promise<T>;
+  async update(id: string | number, data: Partial<T>): Promise<T> {
+    return this.repository.update(id, data);
   }
 
-  protected async update<T>(model: ModelName, id: number | string, data: any): Promise<T> {
-    const modelClient = this.prisma[model.toLowerCase() as keyof PrismaClient] as any;
-    return modelClient.update({
-      where: { id: typeof id === 'string' ? parseInt(id) : id },
-      data
-    }) as Promise<T>;
-  }
-
-  protected async delete<T>(model: ModelName, id: number | string): Promise<T> {
-    const modelClient = this.prisma[model.toLowerCase() as keyof PrismaClient] as any;
-    return modelClient.delete({
-      where: { id: typeof id === 'string' ? parseInt(id) : id }
-    }) as Promise<T>;
+  async delete(id: string | number): Promise<T> {
+    return this.repository.delete(id);
   }
 } 

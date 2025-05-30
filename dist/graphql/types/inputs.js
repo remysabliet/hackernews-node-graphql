@@ -29,7 +29,6 @@ let SignupInput = class SignupInput {
 };
 __decorate([
     Field(),
-    MinLength(1),
     __metadata("design:type", String)
 ], SignupInput.prototype, "name", void 0);
 __decorate([

@@ -15,7 +15,6 @@ export class LoginInput {
 @InputType()
 export class SignupInput {
   @Field()
-  @MinLength(1)
   name!: string;
 
   @Field()
