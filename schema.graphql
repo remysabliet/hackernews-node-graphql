@@ -23,6 +23,16 @@ type Link {
   voters: [User!]
 }
 
+input LinkFilter {
+  endDate: Date
+  minVotes: Float
+  postedById: Float
+  search: String
+  sortBy: String
+  sortOrder: String
+  startDate: Date
+}
+
 input LoginInput {
   email: String!
   password: String!
@@ -38,8 +48,8 @@ type Mutation {
 }
 
 type Query {
+  feeds(filter: LinkFilter): [Link!]!
   link(id: ID!): Link
-  links: [Link!]!
   me: User!
 }
 

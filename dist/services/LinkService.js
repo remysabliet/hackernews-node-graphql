@@ -4,7 +4,10 @@ export class LinkService extends BaseService {
         super(linkRepository);
         this.linkRepository = linkRepository;
     }
-    async getAllLinks() {
+    async getAllLinks(filter) {
+        if (filter) {
+            return this.linkRepository.findWithFilters(filter);
+        }
         return this.getAll();
     }
     async getLinkById(id) {

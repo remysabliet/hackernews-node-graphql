@@ -1,6 +1,7 @@
 import { LinkRepository } from "../repositories/LinkRepository.js";
 import { BaseService } from "./BaseService.js";
 import { Link } from "../graphql/types/Link.js";
+import { LinkFilter } from "../graphql/types/LinkFilter.js";
 
 interface LinkUpdates {
   url?: string;
@@ -12,7 +13,10 @@ export class LinkService extends BaseService<Link> {
     super(linkRepository);
   }
 
-  async getAllLinks(): Promise<Link[]> {
+  async getAllLinks(filter?: LinkFilter): Promise<Link[]> {
+    if (filter) {
+      return this.linkRepository.findWithFilters(filter);
+    }
     return this.getAll();
   }
 

@@ -91,4 +91,56 @@ export class LinkRepository {
         });
         return this.mapPrismaLinkToLink(link);
     }
+    async findWithFilters(filter) {
+        const where = {};
+        if (filter.search) {
+            where.OR = [
+                { description: { contains: filter.search } },
+                { url: { contains: filter.search } }
+            ];
+        }
+        if (filter.postedById) {
+            where.postedById = filter.postedById;
+        }
+        if (filter.minVotes) {
+            where.voters = {
+                some: {}
+            };
+        }
+        if (filter.startDate || filter.endDate) {
+            where.createdAt = {};
+            if (filter.startDate) {
+                where.createdAt.gte = filter.startDate;
+            }
+            if (filter.endDate) {
+                where.createdAt.lte = filter.endDate;
+            }
+        }
+        const orderBy = {};
+        if (filter.sortBy) {
+            if (filter.sortBy === 'votes') {
+                orderBy.voters = {
+                    _count: filter.sortOrder || 'desc'
+                };
+            }
+            else {
+                orderBy[filter.sortBy] = filter.sortOrder || 'desc';
+            }
+        }
+        const links = await this.prisma.link.findMany({
+            where,
+            orderBy,
+            include: {
+                postedBy: true,
+                voters: true
+            }
+        });
+        // Filter by minimum votes count after fetching
+        if (filter.minVotes) {
+            return links
+                .filter(link => link.voters.length >= filter.minVotes)
+                .map(this.mapPrismaLinkToLink);
+        }
+        return links.map(this.mapPrismaLinkToLink);
+    }
 }

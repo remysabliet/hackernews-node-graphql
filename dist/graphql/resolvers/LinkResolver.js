@@ -15,12 +15,13 @@ import { Link } from "../types/Link.js";
 import { Vote } from "../types/Vote.js";
 import { LinkService } from "../../services/LinkService.js";
 import { auth } from "../../middleware/auth.js";
+import { LinkFilter } from "../types/LinkFilter.js";
 let LinkResolver = class LinkResolver {
     constructor(linkService) {
         this.linkService = linkService;
     }
-    async links() {
-        return await this.linkService.getAllLinks();
+    async feeds(filter) {
+        return await this.linkService.getAllLinks(filter);
     }
     async link(id) {
         return await this.linkService.getLinkById(id);
@@ -82,10 +83,11 @@ let LinkResolver = class LinkResolver {
 };
 __decorate([
     Query(() => [Link]),
+    __param(0, Arg("filter", () => LinkFilter, { nullable: true })),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [LinkFilter]),
     __metadata("design:returntype", Promise)
-], LinkResolver.prototype, "links", null);
+], LinkResolver.prototype, "feeds", null);
 __decorate([
     Query(() => Link, { nullable: true }),
     __param(0, Arg("id", () => ID)),

@@ -5,6 +5,7 @@ import { LinkService } from "../../services/LinkService.js";
 import { LinkRepository } from "../../repositories/LinkRepository.js";
 import type { ResolverContext } from "../../types/interfaces.js";
 import { auth } from "../../middleware/auth.js";
+import { LinkFilter } from "../types/LinkFilter.js";
 
 @Resolver(Link)
 export class LinkResolver {
@@ -12,9 +13,15 @@ export class LinkResolver {
     private linkService: LinkService
   ) {}
 
+  /**
+   * Look for all links. 
+   * Optional filter argument
+   */
   @Query(() => [Link])
-  async links(): Promise<Link[]> {
-    return await this.linkService.getAllLinks();
+  async feeds(
+    @Arg("filter", () => LinkFilter, { nullable: true }) filter?: LinkFilter
+  ): Promise<Link[]> {
+    return await this.linkService.getAllLinks(filter);
   }
 
   @Query(() => Link, { nullable: true })
