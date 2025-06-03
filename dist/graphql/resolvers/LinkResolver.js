@@ -10,18 +10,39 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-import { Resolver, Query, Mutation, Arg, Ctx, UseMiddleware, ID } from "type-graphql";
+import { Resolver, Query, Mutation, Arg, Ctx, UseMiddleware, ID, ObjectType, Field } from "type-graphql";
 import { Link } from "../types/Link.js";
 import { Vote } from "../types/Vote.js";
 import { LinkService } from "../../services/LinkService.js";
 import { auth } from "../../middleware/auth.js";
 import { LinkFilter } from "../types/LinkFilter.js";
+import { PaginationInput } from "../types/PaginationInput.js";
+import { PaginationInfo } from "../types/PaginatedResponse.js";
+let PaginatedLinkResponse = class PaginatedLinkResponse {
+};
+__decorate([
+    Field(() => [Link]),
+    __metadata("design:type", Array)
+], PaginatedLinkResponse.prototype, "items", void 0);
+__decorate([
+    Field(() => PaginationInfo),
+    __metadata("design:type", PaginationInfo)
+], PaginatedLinkResponse.prototype, "pagination", void 0);
+PaginatedLinkResponse = __decorate([
+    ObjectType()
+], PaginatedLinkResponse);
 let LinkResolver = class LinkResolver {
     constructor(linkService) {
         this.linkService = linkService;
     }
-    async feeds(filter) {
-        return await this.linkService.getAllLinks(filter);
+    /**
+     * Look for all links with optional filtering and pagination
+     * @param filter - Optional filter criteria
+     * @param pagination - Optional pagination parameters (defaults to page 1, 10 items per page)
+     * @returns Paginated list of links matching the criteria
+     */
+    async feeds(filter, pagination) {
+        return await this.linkService.getAllLinks(filter, pagination);
     }
     async link(id) {
         return await this.linkService.getLinkById(id);
@@ -82,10 +103,12 @@ let LinkResolver = class LinkResolver {
     }
 };
 __decorate([
-    Query(() => [Link]),
+    Query(() => PaginatedLinkResponse),
     __param(0, Arg("filter", () => LinkFilter, { nullable: true })),
+    __param(1, Arg("pagination", () => PaginationInput, { nullable: true })),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [LinkFilter]),
+    __metadata("design:paramtypes", [LinkFilter,
+        PaginationInput]),
     __metadata("design:returntype", Promise)
 ], LinkResolver.prototype, "feeds", null);
 __decorate([

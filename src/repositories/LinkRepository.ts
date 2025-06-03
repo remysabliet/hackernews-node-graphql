@@ -2,10 +2,17 @@ import { PrismaClient, Prisma } from "@prisma/client";
 import { Link } from "../graphql/types/Link.js";
 import { IBaseRepository } from "./BaseRepository.js";
 import { LinkFilter } from "../graphql/types/LinkFilter.js";
+import { PaginationInput } from "../graphql/types/PaginationInput.js";
+import { PaginationInfo } from "../graphql/types/PaginatedResponse.js";
 
 type PrismaLink = Prisma.LinkGetPayload<{
   include: { postedBy: true; voters: true }
 }>;
+
+interface PaginatedResponse {
+  items: Link[];
+  pagination: PaginationInfo;
+}
 
 export class LinkRepository implements IBaseRepository<Link> {
   constructor(private prisma: PrismaClient) { }
@@ -40,8 +47,7 @@ export class LinkRepository implements IBaseRepository<Link> {
         voters: true
       }
     });
-    if (!link) return null;
-    return this.mapPrismaLinkToLink(link);
+    return link ? this.mapPrismaLinkToLink(link) : null;
   }
 
   async create(data: Partial<Link> & { userId: number }): Promise<Link> {
@@ -89,23 +95,68 @@ export class LinkRepository implements IBaseRepository<Link> {
 
   async vote(linkId: string, userId: number): Promise<Link> {
     const link = await this.prisma.link.update({
-      where: {
-        id: parseInt(linkId)
-      },
+      where: { id: parseInt(linkId) },
       data: {
         voters: {
-          connect: { id: userId } //  connect means "add a new relationship in the join table" _Votes
+          connect: { id: userId }
         }
       },
       include: {
-        postedBy: true, 
-        voters: true 
+        postedBy: true,
+        voters: true
       }
     });
     return this.mapPrismaLinkToLink(link);
   }
 
-  async findWithFilters(filter: LinkFilter): Promise<Link[]> {
+  async findWithFilters(
+    filter: LinkFilter,
+    pagination: PaginationInput
+  ): Promise<PaginatedResponse> {
+    const where: Prisma.LinkWhereInput = this.buildWhereClause(filter);
+    const orderBy: Prisma.LinkOrderByWithRelationInput = this.buildOrderByClause(filter);
+
+    // Handle cursor-based pagination
+    const cursor = pagination.cursor ? { id: parseInt(pagination.cursor) } : undefined;
+
+    // Get paginated results
+    const links = await this.prisma.link.findMany({
+      where,
+      orderBy: {
+        id: 'asc'
+      },
+      take: pagination.take + 1,
+      cursor,
+      include: {
+        postedBy: true,
+        voters: true
+      }
+    });
+
+    // Check if there's a next page
+    const hasNextPage = links.length > pagination.take;
+    // Remove the extra item if it exists
+    const items = hasNextPage ? links.slice(0, -1) : links;
+
+    // Filter by minimum votes count after fetching if needed
+    let filteredLinks = items;
+    if (filter.minVotes) {
+      filteredLinks = items.filter(link => link.voters.length >= filter.minVotes!);
+    }
+
+    const paginationInfo: PaginationInfo = {
+      take: pagination.take,
+      cursor: hasNextPage ? items[items.length - 1].id.toString() : undefined,
+      hasNextPage
+    };
+
+    return {
+      items: filteredLinks.map(this.mapPrismaLinkToLink),
+      pagination: paginationInfo
+    };
+  }
+
+  private buildWhereClause(filter: LinkFilter): Prisma.LinkWhereInput {
     const where: Prisma.LinkWhereInput = {};
 
     if (filter.search) {
@@ -135,7 +186,12 @@ export class LinkRepository implements IBaseRepository<Link> {
       }
     }
 
+    return where;
+  }
+
+  private buildOrderByClause(filter: LinkFilter): Prisma.LinkOrderByWithRelationInput {
     const orderBy: Prisma.LinkOrderByWithRelationInput = {};
+    
     if (filter.sortBy) {
       if (filter.sortBy === 'votes') {
         orderBy.voters = {
@@ -146,22 +202,6 @@ export class LinkRepository implements IBaseRepository<Link> {
       }
     }
 
-    const links = await this.prisma.link.findMany({
-      where,
-      orderBy,
-      include: {
-        postedBy: true,
-        voters: true
-      }
-    });
-
-    // Filter by minimum votes count after fetching
-    if (filter.minVotes) {
-      return links
-        .filter(link => link.voters.length >= filter.minVotes!)
-        .map(this.mapPrismaLinkToLink);
-    }
-
-    return links.map(this.mapPrismaLinkToLink);
+    return orderBy;
   }
 } 

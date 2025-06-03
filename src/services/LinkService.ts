@@ -2,6 +2,13 @@ import { LinkRepository } from "../repositories/LinkRepository.js";
 import { BaseService } from "./BaseService.js";
 import { Link } from "../graphql/types/Link.js";
 import { LinkFilter } from "../graphql/types/LinkFilter.js";
+import { PaginationInput } from "../graphql/types/PaginationInput.js";
+import { PaginationInfo } from "../graphql/types/PaginatedResponse.js";
+
+interface PaginatedResponse {
+  items: Link[];
+  pagination: PaginationInfo;
+}
 
 interface LinkUpdates {
   url?: string;
@@ -13,11 +20,11 @@ export class LinkService extends BaseService<Link> {
     super(linkRepository);
   }
 
-  async getAllLinks(filter?: LinkFilter): Promise<Link[]> {
-    if (filter) {
-      return this.linkRepository.findWithFilters(filter);
-    }
-    return this.getAll();
+  async getAllLinks(
+    filter: LinkFilter = {},
+    pagination: PaginationInput = { take: 10 }
+  ): Promise<PaginatedResponse> {
+    return this.linkRepository.findWithFilters(filter, pagination);
   }
 
   async getLinkById(id: string): Promise<Link | null> {
@@ -32,28 +39,14 @@ export class LinkService extends BaseService<Link> {
   }
 
   async updateLink(id: string, updates: LinkUpdates): Promise<Link> {
-    // Here you could add business logic like:
-    // - Authorization checks
-    // - Update validation
-    // - etc.
-
     return this.linkRepository.update(id, updates);
   }
 
   async deleteLink(id: string): Promise<Link> {
-    // Here you could add business logic like:
-    // - Authorization checks
-    // - Soft delete logic
-    // - etc.
-
     return this.linkRepository.delete(id);
   }
 
   async vote(linkId: string, userId: number): Promise<Link> {
-    // Here you could add business logic like:
-    // - Authorization checks
-    // - Soft delete logic
-    // - etc.
     return this.linkRepository.vote(linkId, userId);
   }
 } 

@@ -4,11 +4,8 @@ export class LinkService extends BaseService {
         super(linkRepository);
         this.linkRepository = linkRepository;
     }
-    async getAllLinks(filter) {
-        if (filter) {
-            return this.linkRepository.findWithFilters(filter);
-        }
-        return this.getAll();
+    async getAllLinks(filter = {}, pagination = { take: 10 }) {
+        return this.linkRepository.findWithFilters(filter, pagination);
     }
     async getLinkById(id) {
         return this.getById(id);
@@ -20,24 +17,12 @@ export class LinkService extends BaseService {
         return this.linkRepository.create({ url, description, userId });
     }
     async updateLink(id, updates) {
-        // Here you could add business logic like:
-        // - Authorization checks
-        // - Update validation
-        // - etc.
         return this.linkRepository.update(id, updates);
     }
     async deleteLink(id) {
-        // Here you could add business logic like:
-        // - Authorization checks
-        // - Soft delete logic
-        // - etc.
         return this.linkRepository.delete(id);
     }
     async vote(linkId, userId) {
-        // Here you could add business logic like:
-        // - Authorization checks
-        // - Soft delete logic
-        // - etc.
         return this.linkRepository.vote(linkId, userId);
     }
 }

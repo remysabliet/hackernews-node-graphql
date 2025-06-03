@@ -47,8 +47,24 @@ type Mutation {
   vote(linkId: ID!): Vote!
 }
 
+type PaginatedLinkResponse {
+  items: [Link!]!
+  pagination: PaginationInfo!
+}
+
+type PaginationInfo {
+  cursor: ID
+  hasNextPage: Boolean!
+  take: Int!
+}
+
+input PaginationInput {
+  cursor: ID
+  take: Int! = 10
+}
+
 type Query {
-  feeds(filter: LinkFilter): [Link!]!
+  feeds(filter: LinkFilter, pagination: PaginationInput): PaginatedLinkResponse!
   link(id: ID!): Link
   me: User!
 }

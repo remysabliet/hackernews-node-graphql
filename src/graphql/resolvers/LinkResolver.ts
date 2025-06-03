@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Arg, Ctx, UseMiddleware, ID } from "type-graphql";
+import { Resolver, Query, Mutation, Arg, Ctx, UseMiddleware, ID, ObjectType, Field } from "type-graphql";
 import { Link } from "../types/Link.js";
 import { Vote } from "../types/Vote.js";
 import { LinkService } from "../../services/LinkService.js";
@@ -6,6 +6,17 @@ import { LinkRepository } from "../../repositories/LinkRepository.js";
 import type { ResolverContext } from "../../types/interfaces.js";
 import { auth } from "../../middleware/auth.js";
 import { LinkFilter } from "../types/LinkFilter.js";
+import { PaginationInput } from "../types/PaginationInput.js";
+import { PaginationInfo } from "../types/PaginatedResponse.js";
+
+@ObjectType()
+class PaginatedLinkResponse {
+  @Field(() => [Link])
+  items: Link[];
+
+  @Field(() => PaginationInfo)
+  pagination: PaginationInfo;
+}
 
 @Resolver(Link)
 export class LinkResolver {
@@ -14,14 +25,17 @@ export class LinkResolver {
   ) {}
 
   /**
-   * Look for all links. 
-   * Optional filter argument
+   * Look for all links with optional filtering and pagination
+   * @param filter - Optional filter criteria
+   * @param pagination - Optional pagination parameters (defaults to page 1, 10 items per page)
+   * @returns Paginated list of links matching the criteria
    */
-  @Query(() => [Link])
+  @Query(() => PaginatedLinkResponse)
   async feeds(
-    @Arg("filter", () => LinkFilter, { nullable: true }) filter?: LinkFilter
-  ): Promise<Link[]> {
-    return await this.linkService.getAllLinks(filter);
+    @Arg("filter", () => LinkFilter, { nullable: true }) filter?: LinkFilter,
+    @Arg("pagination", () => PaginationInput, { nullable: true }) pagination?: PaginationInput
+  ) {
+    return await this.linkService.getAllLinks(filter, pagination);
   }
 
   @Query(() => Link, { nullable: true })

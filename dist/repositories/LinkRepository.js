@@ -30,9 +30,7 @@ export class LinkRepository {
                 voters: true
             }
         });
-        if (!link)
-            return null;
-        return this.mapPrismaLinkToLink(link);
+        return link ? this.mapPrismaLinkToLink(link) : null;
     }
     async create(data) {
         const link = await this.prisma.link.create({
@@ -76,12 +74,10 @@ export class LinkRepository {
     }
     async vote(linkId, userId) {
         const link = await this.prisma.link.update({
-            where: {
-                id: parseInt(linkId)
-            },
+            where: { id: parseInt(linkId) },
             data: {
                 voters: {
-                    connect: { id: userId } //  connect means "add a new relationship in the join table" _Votes
+                    connect: { id: userId }
                 }
             },
             include: {
@@ -91,7 +87,44 @@ export class LinkRepository {
         });
         return this.mapPrismaLinkToLink(link);
     }
-    async findWithFilters(filter) {
+    async findWithFilters(filter, pagination) {
+        const where = this.buildWhereClause(filter);
+        const orderBy = this.buildOrderByClause(filter);
+        // Handle cursor-based pagination
+        const cursor = pagination.cursor ? { id: parseInt(pagination.cursor) } : undefined;
+        // Get paginated results
+        const links = await this.prisma.link.findMany({
+            where,
+            orderBy: {
+                id: 'asc'
+            },
+            take: pagination.take + 1,
+            cursor,
+            include: {
+                postedBy: true,
+                voters: true
+            }
+        });
+        // Check if there's a next page
+        const hasNextPage = links.length > pagination.take;
+        // Remove the extra item if it exists
+        const items = hasNextPage ? links.slice(0, -1) : links;
+        // Filter by minimum votes count after fetching if needed
+        let filteredLinks = items;
+        if (filter.minVotes) {
+            filteredLinks = items.filter(link => link.voters.length >= filter.minVotes);
+        }
+        const paginationInfo = {
+            take: pagination.take,
+            cursor: hasNextPage ? items[items.length - 1].id.toString() : undefined,
+            hasNextPage
+        };
+        return {
+            items: filteredLinks.map(this.mapPrismaLinkToLink),
+            pagination: paginationInfo
+        };
+    }
+    buildWhereClause(filter) {
         const where = {};
         if (filter.search) {
             where.OR = [
@@ -116,6 +149,9 @@ export class LinkRepository {
                 where.createdAt.lte = filter.endDate;
             }
         }
+        return where;
+    }
+    buildOrderByClause(filter) {
         const orderBy = {};
         if (filter.sortBy) {
             if (filter.sortBy === 'votes') {
@@ -127,20 +163,6 @@ export class LinkRepository {
                 orderBy[filter.sortBy] = filter.sortOrder || 'desc';
             }
         }
-        const links = await this.prisma.link.findMany({
-            where,
-            orderBy,
-            include: {
-                postedBy: true,
-                voters: true
-            }
-        });
-        // Filter by minimum votes count after fetching
-        if (filter.minVotes) {
-            return links
-                .filter(link => link.voters.length >= filter.minVotes)
-                .map(this.mapPrismaLinkToLink);
-        }
-        return links.map(this.mapPrismaLinkToLink);
+        return orderBy;
     }
 }
