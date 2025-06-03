@@ -35,7 +35,6 @@ export class LinkService extends BaseService {
         // - Authorization checks
         // - Soft delete logic
         // - etc.
-        console.log("passage", this.linkRepository);
         return this.linkRepository.vote(linkId, userId);
     }
 }

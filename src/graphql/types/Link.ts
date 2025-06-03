@@ -1,5 +1,6 @@
 import { ObjectType, Field, ID } from "type-graphql";
 import { User } from "./User.js";
+import { CustomDateScalar } from "../scalars/CustomDateScalar.js";
 
 /**
  * Link entity representing a news link in the system
@@ -29,10 +30,10 @@ export class Link {
   description: string;
 
   /**
-   * Creation timestamp of the link
+   * Creation timestamp of the link - now uses custom Date scalar
    * @type {Date}
    */
-  @Field()
+  @Field(() => CustomDateScalar) // Explicitly use our custom scalar
   createdAt: Date;
 
   /**

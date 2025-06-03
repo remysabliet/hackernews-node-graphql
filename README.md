@@ -124,12 +124,23 @@ This project is licensed under the ISC License.
 ## Database Setup
 
 ### Initial Setup
+
 ```bash
-# Create and apply migrations
-pnpm prisma:migrate
+# Create and apply new migration (update both Prisma client libraries and database model)
+pnpm prisma:migrate dev
 
 # Seed the database with sample data
 pnpm prisma db seed
+```
+
+Other essential commands
+
+```bash
+# Open Prisma Studio (database browser)
+pnpm prisma:studio
+
+# Reset database and apply all migrations (development only)
+pnpm prisma migrate reset
 ```
 
 The seed data includes:

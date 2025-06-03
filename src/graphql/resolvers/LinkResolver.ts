@@ -3,7 +3,7 @@ import { Link } from "../types/Link.js";
 import { Vote } from "../types/Vote.js";
 import { LinkService } from "../../services/LinkService.js";
 import { LinkRepository } from "../../repositories/LinkRepository.js";
-import { ResolverContext } from "../../types/interfaces.js";
+import type { ResolverContext } from "../../types/interfaces.js";
 import { auth } from "../../middleware/auth.js";
 
 @Resolver(Link)

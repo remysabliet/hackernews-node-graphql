@@ -1,16 +1,15 @@
 import { ApolloServer } from "@apollo/server";
+import "reflect-metadata";
 import { startStandaloneServer } from "@apollo/server/standalone";
-import { PrismaClient } from "@prisma/client";
 import dotenv from "dotenv";
 import { buildSchema } from "type-graphql";
-import "reflect-metadata";
+
 import { Container } from "../container.js";
 import { LinkResolver } from "../graphql/resolvers/LinkResolver.js";
 import { UserResolver } from "../graphql/resolvers/UserResolver.js";
 import { ResolverContext } from "../types/interfaces.js";
 import { Vote } from "../graphql/types/Vote.js";
-import { LinkService } from "../services/LinkService.js";
-import { LinkRepository } from "../repositories/LinkRepository.js";
+import { CustomDateScalar } from "../graphql/scalars/CustomDateScalar.js";
 
 // Load environment variables
 dotenv.config();
@@ -33,7 +32,6 @@ export async function createServer(): Promise<ApolloServer<ResolverContext>> {
   try {
     const container = Container.getInstance();
     const authService = container.getAuthService();
-    const prisma = container.getPrisma();
     const linkService = container.getLinkService();
 
     const schema = await buildSchema({
@@ -41,6 +39,9 @@ export async function createServer(): Promise<ApolloServer<ResolverContext>> {
       orphanedTypes: [Vote],
       emitSchemaFile: true,
       validate: false,
+      scalarsMap: [
+        { type: Date, scalar: CustomDateScalar }
+      ],
       container: {
         get: (type) => {
           if (type === UserResolver) {
@@ -79,8 +80,8 @@ export async function startServer() {
     context: async ({ req }): Promise<ResolverContext> => {
       const token = req.headers.authorization || "";
       const user = token ? await authService.getUserFromToken(token) : null;
-      return { 
-        prisma, 
+      return {
+        prisma,
         user,
         linkService,
         authService

@@ -1,15 +1,17 @@
 import { Resolver, Query, Mutation, Arg, Ctx, UseMiddleware } from "type-graphql";
+
+import type { ResolverContext } from "../../types/interfaces.js";
+
 import { User } from "../types/User.js";
 import { AuthPayload } from "../types/AuthPayload.js";
 import { LoginInput, SignupInput } from "../types/inputs.js";
 import { AuthService } from "../../services/AuthService.js";
-import { ResolverContext } from "../../types/interfaces.js";
 import { auth } from "../../middleware/auth.js";
 import { validateEmail, validatePassword } from "../../utils/validation.js";
 
 @Resolver(User)
 export class UserResolver {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   @Query(() => User)
   @UseMiddleware(auth)

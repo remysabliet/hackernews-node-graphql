@@ -1,12 +1,13 @@
 import { ApolloServer } from "@apollo/server";
+import "reflect-metadata";
 import { startStandaloneServer } from "@apollo/server/standalone";
 import dotenv from "dotenv";
 import { buildSchema } from "type-graphql";
-import "reflect-metadata";
 import { Container } from "../container.js";
 import { LinkResolver } from "../graphql/resolvers/LinkResolver.js";
 import { UserResolver } from "../graphql/resolvers/UserResolver.js";
 import { Vote } from "../graphql/types/Vote.js";
+import { CustomDateScalar } from "../graphql/scalars/CustomDateScalar.js";
 // Load environment variables
 dotenv.config();
 // Configuration constants
@@ -25,13 +26,15 @@ export async function createServer() {
     try {
         const container = Container.getInstance();
         const authService = container.getAuthService();
-        const prisma = container.getPrisma();
         const linkService = container.getLinkService();
         const schema = await buildSchema({
             resolvers: [LinkResolver, UserResolver],
             orphanedTypes: [Vote],
             emitSchemaFile: true,
             validate: false,
+            scalarsMap: [
+                { type: Date, scalar: CustomDateScalar }
+            ],
             container: {
                 get: (type) => {
                     if (type === UserResolver) {

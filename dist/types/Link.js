@@ -9,11 +9,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 import { ObjectType, Field, ID } from "type-graphql";
 import { User } from "./User.js";
-import { CustomDateScalar } from "../scalars/CustomDateScalar.js";
-/**
- * Link entity representing a news link in the system
- * @class Link
- */
 let Link = class Link {
 };
 __decorate([
@@ -29,7 +24,7 @@ __decorate([
     __metadata("design:type", String)
 ], Link.prototype, "description", void 0);
 __decorate([
-    Field(() => CustomDateScalar) // Explicitly use our custom scalar
+    Field(() => Date) // This will use our custom Date scalar
     ,
     __metadata("design:type", Date)
 ], Link.prototype, "createdAt", void 0);
