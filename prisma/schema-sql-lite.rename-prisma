@@ -1,10 +1,12 @@
+Rename this file schema.prisma to use SQL Lite (local db)
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"  
-  url      = env("DATABASE_URL")  
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 model Link {
@@ -15,8 +17,6 @@ model Link {
   postedById  Int?
   postedBy    User?    @relation("PostedBy", fields: [postedById], references: [id])
   voters      User[]   @relation("Votes")
-
-  @@map("links")
 }
 
 model User {
@@ -26,6 +26,4 @@ model User {
   password String
   links    Link[] @relation("PostedBy")
   votes    Link[] @relation("Votes")
-
-  @@map("users")
 }
