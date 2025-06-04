@@ -1,4 +1,5 @@
 import { ApolloServer } from "@apollo/server";
+import { ApolloServerPluginLandingPageLocalDefault } from "apollo-server-core";
 import "reflect-metadata";
 import { startStandaloneServer } from "@apollo/server/standalone";
 import dotenv from "dotenv";
@@ -49,6 +50,8 @@ export async function createServer() {
         });
         return new ApolloServer({
             schema,
+            introspection: true, //Normally not good in production, just for learning purpose
+            plugins: [ApolloServerPluginLandingPageLocalDefault()]
         });
     }
     catch (error) {

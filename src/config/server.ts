@@ -1,4 +1,6 @@
 import { ApolloServer } from "@apollo/server";
+import { ApolloServerPluginLandingPageLocalDefault } from "apollo-server-core";
+import { ApolloServerPlugin } from "@apollo/server";
 import "reflect-metadata";
 import { startStandaloneServer } from "@apollo/server/standalone";
 import dotenv from "dotenv";
@@ -57,6 +59,8 @@ export async function createServer(): Promise<ApolloServer<ResolverContext>> {
 
     return new ApolloServer<ResolverContext>({
       schema,
+      introspection: true, //Normally not good in production, just for learning purpose
+      plugins: [ApolloServerPluginLandingPageLocalDefault() as ApolloServerPlugin<ResolverContext>]
     });
   } catch (error) {
     console.error("Failed to create server:", error);
