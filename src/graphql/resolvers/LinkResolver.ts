@@ -22,7 +22,7 @@ class PaginatedLinkResponse {
 export class LinkResolver {
   constructor(
     private linkService: LinkService
-  ) {}
+  ) { }
 
   /**
    * Look for all links with optional filtering and pagination
@@ -35,6 +35,7 @@ export class LinkResolver {
     @Arg("filter", () => LinkFilter, { nullable: true }) filter?: LinkFilter,
     @Arg("pagination", () => PaginationInput, { nullable: true }) pagination?: PaginationInput
   ) {
+    console.log("filters", filter);
     return await this.linkService.getAllLinks(filter, pagination);
   }
 

@@ -122,9 +122,7 @@ export class LinkRepository implements IBaseRepository<Link> {
     // Get paginated results
     const links = await this.prisma.link.findMany({
       where,
-      orderBy: {
-        id: 'asc'
-      },
+      orderBy,
       take: pagination.take + 1,
       cursor,
       include: {
@@ -192,14 +190,17 @@ export class LinkRepository implements IBaseRepository<Link> {
   private buildOrderByClause(filter: LinkFilter): Prisma.LinkOrderByWithRelationInput {
     const orderBy: Prisma.LinkOrderByWithRelationInput = {};
     
-    if (filter.sortBy) {
-      if (filter.sortBy === 'votes') {
-        orderBy.voters = {
-          _count: filter.sortOrder || 'desc'
-        };
-      } else {
-        orderBy[filter.sortBy] = filter.sortOrder || 'desc';
-      }
+    if (filter.sort && filter.sort.length > 0) {
+      // Convert array of sort criteria to Prisma's orderBy format
+      filter.sort.forEach(sort => {
+        if (sort.field === 'votes') {
+          orderBy.voters = {
+            _count: sort.order
+          };
+        } else {
+          orderBy[sort.field] = sort.order;
+        }
+      });
     }
 
     return orderBy;

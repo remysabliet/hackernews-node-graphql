@@ -1,6 +1,15 @@
 import { InputType, Field } from "type-graphql";
 
 @InputType()
+export class SortInput {
+  @Field(() => String)
+  field: "createdAt" | "votes" | "url" | "description";
+
+  @Field(() => String)
+  order: "asc" | "desc";
+}
+
+@InputType()
 export class LinkFilter {
   @Field({ nullable: true })
   search?: string;
@@ -17,9 +26,6 @@ export class LinkFilter {
   @Field({ nullable: true })
   endDate?: Date;
 
-  @Field({ nullable: true })
-  sortBy?: "createdAt" | "votes";
-
-  @Field({ nullable: true })
-  sortOrder?: "asc" | "desc";
+  @Field(() => [SortInput], { nullable: true })
+  sort?: SortInput[];
 } 

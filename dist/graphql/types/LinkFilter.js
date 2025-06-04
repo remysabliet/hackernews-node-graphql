@@ -8,6 +8,20 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 import { InputType, Field } from "type-graphql";
+let SortInput = class SortInput {
+};
+__decorate([
+    Field(() => String),
+    __metadata("design:type", String)
+], SortInput.prototype, "field", void 0);
+__decorate([
+    Field(() => String),
+    __metadata("design:type", String)
+], SortInput.prototype, "order", void 0);
+SortInput = __decorate([
+    InputType()
+], SortInput);
+export { SortInput };
 let LinkFilter = class LinkFilter {
 };
 __decorate([
@@ -31,13 +45,9 @@ __decorate([
     __metadata("design:type", Date)
 ], LinkFilter.prototype, "endDate", void 0);
 __decorate([
-    Field({ nullable: true }),
-    __metadata("design:type", String)
-], LinkFilter.prototype, "sortBy", void 0);
-__decorate([
-    Field({ nullable: true }),
-    __metadata("design:type", String)
-], LinkFilter.prototype, "sortOrder", void 0);
+    Field(() => [SortInput], { nullable: true }),
+    __metadata("design:type", Array)
+], LinkFilter.prototype, "sort", void 0);
 LinkFilter = __decorate([
     InputType()
 ], LinkFilter);

@@ -42,6 +42,7 @@ let LinkResolver = class LinkResolver {
      * @returns Paginated list of links matching the criteria
      */
     async feeds(filter, pagination) {
+        console.log("filters", filter);
         return await this.linkService.getAllLinks(filter, pagination);
     }
     async link(id) {
